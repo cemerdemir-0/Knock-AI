@@ -1,0 +1,7 @@
+streamlit
+google-generativeai
+transformers
+torch
+requests
+python-dotenv
+Pillow

@@ -1,0 +1,27 @@
+# Environment variables
+.env
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyCharm
+.idea/
+
+# Test outputs
+test_door.png
+*.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# HuggingFace cache
+*.cache
