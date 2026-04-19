@@ -34,11 +34,43 @@ if st.button("Find My Door", type="primary"):
 
 if "all_emotions" in st.session_state:
     st.subheader("🎭 Emotions detected:")
+
+    # Metric kutucukları
     cols = st.columns(3)
     for i, (emotion, score) in enumerate(
-        sorted(st.session_state.all_emotions.items(), key=lambda x: x[1], reverse=True)[:3]
+            sorted(st.session_state.all_emotions.items(), key=lambda x: x[1], reverse=True)[:3]
     ):
-        cols[i].metric(emotion.capitalize(), f"{score*100:.0f}%")
+        cols[i].metric(emotion.capitalize(), f"{score * 100:.0f}%")
+
+    # Bar chart
+    import pandas as pd
+
+    emotion_colors = {
+        "sadness": "#6B8CAE",
+        "joy": "#F4C542",
+        "anger": "#E05C5C",
+        "fear": "#9B72CF",
+        "love": "#E87EA1",
+        "surprise": "#5CB85C"
+    }
+
+    sorted_emotions = sorted(
+        st.session_state.all_emotions.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    MEANINGFUL_EMOTIONS = {
+        "sadness", "joy", "anger", "fear", "love", "surprise",
+        "disappointment", "grief", "nervousness", "remorse",
+        "optimism", "desire", "relief", "excitement", "annoyance"
+    }
+    sorted_emotions = [(e, s) for e, s in sorted_emotions if e in MEANINGFUL_EMOTIONS]
+    df = pd.DataFrame(sorted_emotions, columns=["Emotion", "Score"])
+    df["Score"] = (df["Score"] * 100).round(1)
+    df["Color"] = df["Emotion"].map(emotion_colors).fillna("#888888")
+
+    st.bar_chart(df.set_index("Emotion")["Score"], color="#6B8CAE")
 
     st.divider()
     st.subheader("🚪 Your Three Doors:")
@@ -57,6 +89,32 @@ if "all_emotions" in st.session_state:
             st.markdown(door_text.replace("DOOR:", "**DOOR:**").replace("REASON:", "**REASON:**").replace("POEM:", "**POEM:**"))
             if st.button(f"🚪 Choose this door", key=f"door_{i}"):
                 st.session_state.selected_door = door_title
+                # Şiiri çıkar ve indir butonu ekle
+                poem_lines = []
+                in_poem = False
+                for line in door_text.strip().split("\n"):
+                    if line.startswith("POEM:"):
+                        in_poem = True
+                        continue
+                    if in_poem and line.strip():
+                        poem_lines.append(line.strip())
+
+                if poem_lines:
+                    from poem_card import create_poem_card
+                    from io import BytesIO
+
+                    card = create_poem_card(door_title, poem_lines)
+                    buf = BytesIO()
+                    card.save(buf, format="PNG")
+                    buf.seek(0)
+
+                    st.download_button(
+                        label="🎨 Download Poem Card",
+                        data=buf,
+                        file_name=f"{door_title.replace(' ', '_')}_poem.png",
+                        mime="image/png",
+                        key=f"download_{i}"
+                    )
 
 if st.session_state.get("selected_door"):
     st.divider()

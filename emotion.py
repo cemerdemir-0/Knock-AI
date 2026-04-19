@@ -2,7 +2,7 @@ from transformers import pipeline
 
 emotion_classifier = pipeline(
     "text-classification",
-    model="bhadresh-savani/distilbert-base-uncased-emotion",
+    model="SamLowe/roberta-base-go_emotions",
     top_k=None
 )
 
