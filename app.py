@@ -3,6 +3,7 @@ from emotion import get_top_emotions, analyze_emotion
 from llm import generate_doors
 from image_gen import generate_door_image
 import re
+import pandas as pd
 
 st.set_page_config(page_title="Which Door Are You Knocking On?", page_icon="🚪", layout="wide")
 
@@ -41,9 +42,6 @@ if "all_emotions" in st.session_state:
             sorted(st.session_state.all_emotions.items(), key=lambda x: x[1], reverse=True)[:3]
     ):
         cols[i].metric(emotion.capitalize(), f"{score * 100:.0f}%")
-
-    # Bar chart
-    import pandas as pd
 
     emotion_colors = {
         "sadness": "#6B8CAE",
