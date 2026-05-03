@@ -73,7 +73,7 @@ if "all_emotions" in st.session_state:
     st.bar_chart(df.set_index("Emotion")["Score"], color="#6B8CAE")
 
     st.divider()
-    st.subheader("🚪 Your Three Doors:")
+    st.subheader("🚪 Your Four Doors:")
 
     doors = re.split(r"---+", st.session_state.raw_output)
     doors = [d.strip() for d in doors if d.strip()]

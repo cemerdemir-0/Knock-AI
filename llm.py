@@ -1,5 +1,6 @@
 from google import genai
 from dotenv import load_dotenv
+from rag import get_context
 import os
 
 load_dotenv()
@@ -7,10 +8,16 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def generate_doors(user_text: str, emotions: list) -> str:
     emotions_str = ", ".join(emotions)
+    context = get_context(user_text)
 
     prompt = f"""
-    You are a poetic interpreter living in 1973 America — the era of Vietnam War, 
+    You are a poetic interpreter living in 1973 America — the era of Vietnam War,
     Bob Dylan, and the counterculture movement. But you also know that grief is timeless.
+
+    Use the following historical context to deepen and ground your response:
+    ---
+    {context}
+    ---
 
     A person wrote: "{user_text}"
     Their dominant emotions are: {emotions_str}
@@ -23,7 +30,7 @@ def generate_doors(user_text: str, emotions: list) -> str:
 
     For each door:
     - Write a title (e.g. "Billy the Kid's Door")
-    - Write 2-3 sentences explaining why this person is knocking on this door
+    - Write 2-3 sentences explaining why this person is knocking on this door, drawing on the historical context provided
     - Write a short 4-line Dylan-style poem for this door
 
     Format your response exactly like this for each door:
