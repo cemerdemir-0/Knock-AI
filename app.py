@@ -75,8 +75,8 @@ if "all_emotions" in st.session_state:
     st.divider()
     st.subheader("🚪 Your Four Doors:")
 
-    doors = re.split(r"---+", st.session_state.raw_output)
-    doors = [d.strip() for d in doors if d.strip()]
+    doors = re.split(r'\n(?=DOOR:)', st.session_state.raw_output.strip())
+    doors = [d.strip() for d in doors if d.strip() and 'DOOR:' in d]
 
     for i, door_text in enumerate(doors):
         door_title = ""
@@ -86,10 +86,30 @@ if "all_emotions" in st.session_state:
                 break
 
         with st.expander(f"Door {i+1}: {door_title}", expanded=True):
-            st.markdown(door_text.replace("DOOR:", "**DOOR:**").replace("REASON:", "**REASON:**").replace("POEM:", "**POEM:**"))
+            reason, poem_lines_display = "", []
+            in_reason, in_poem_display = False, False
+            for line in door_text.strip().split("\n"):
+                if line.startswith("DOOR:"):
+                    continue
+                elif line.startswith("REASON:"):
+                    in_reason, in_poem_display = True, False
+                    reason = line.replace("REASON:", "").strip()
+                elif line.startswith("POEM:"):
+                    in_reason, in_poem_display = False, True
+                elif in_reason and line.strip():
+                    reason += " " + line.strip()
+                elif in_poem_display and line.strip():
+                    poem_lines_display.append(line.strip())
+
+            st.caption("Why this door")
+            st.write(reason)
+            st.caption("Poem")
+            for pl in poem_lines_display:
+                st.markdown(f"*{pl}*")
+            st.write("")
             if st.button(f"🚪 Choose this door", key=f"door_{i}"):
                 st.session_state.selected_door = door_title
-                # Şiiri çıkar ve indir butonu ekle
+                st.session_state.door_image = None
                 poem_lines = []
                 in_poem = False
                 for line in door_text.strip().split("\n"):
@@ -106,21 +126,27 @@ if "all_emotions" in st.session_state:
                     card = create_poem_card(door_title, poem_lines)
                     buf = BytesIO()
                     card.save(buf, format="PNG")
-                    buf.seek(0)
-
-                    st.download_button(
-                        label="🎨 Download Poem Card",
-                        data=buf,
-                        file_name=f"{door_title.replace(' ', '_')}_poem.png",
-                        mime="image/png",
-                        key=f"download_{i}"
-                    )
+                    st.session_state.poem_card_bytes = buf.getvalue()
+                    st.session_state.poem_card_filename = f"{door_title.replace(' ', '_')}_poem.png"
 
 if st.session_state.get("selected_door"):
     st.divider()
     st.subheader(f"✨ You chose: {st.session_state.selected_door}")
+
+    if st.session_state.get("poem_card_bytes"):
+        st.download_button(
+            label="🎨 Download Poem Card",
+            data=st.session_state.poem_card_bytes,
+            file_name=st.session_state.get("poem_card_filename", "poem_card.png"),
+            mime="image/png"
+        )
+
     if st.session_state.get("door_image") is None:
         with st.spinner("Generating your door's vision..."):
             img = generate_door_image(st.session_state.selected_door)
             st.session_state.door_image = img
-    st.image(st.session_state.door_image, width=400)
+
+    if st.session_state.door_image is not None:
+        st.image(st.session_state.door_image, width=400)
+    else:
+        st.error("Image generation failed. Please check your Stability AI API key.")

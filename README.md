@@ -26,7 +26,7 @@ The four doors:
 
 | Technique | Tool | Role |
 |---|---|---|
-| Emotion Analysis (NLP) | HuggingFace `distilbert-base-uncased-emotion` | Detects dominant emotions in user text |
+| Emotion Analysis (NLP) | HuggingFace `SamLowe/roberta-base-go_emotions` | Detects dominant emotions in user text |
 | Retrieval-Augmented Generation (RAG) | ChromaDB + Gemini Embeddings | Retrieves relevant historical context from documents |
 | Large Language Model (LLM) | Google Gemini 2.5 Flash Lite | Generates door matches and Dylan-style poems |
 | Image Generation | Stability AI SDXL 1.0 | Generates a visual for the chosen door |
