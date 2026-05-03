@@ -1,18 +1,36 @@
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import textwrap
+import random
 import os
 
 
-def create_poem_card(door_title: str, poem_lines: list) -> Image.Image:
-    # Boyut
+_FONT_CANDIDATES = [
+    r"C:\Windows\Fonts\georgia.ttf",
+    r"C:\Windows\Fonts\Georgia.ttf",
+    r"C:\Windows\Fonts\GEORGIA.TTF",
+    r"C:\Windows\Fonts\times.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+    "/System/Library/Fonts/Supplemental/Georgia.ttf",
+]
+
+def _load_font(size):
+    for path in _FONT_CANDIDATES:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, size)
+            except Exception:
+                continue
+    return ImageFont.load_default()
+
+
+def create_poem_card(door_title, poem_lines):
     width, height = 800, 600
 
-    # Arka plan rengi - kapıya göre
     themes = {
-        "Billy": (210, 180, 140),  # Kum rengi
-        "Vietnam": (180, 190, 170),  # Soluk yeşil
-        "Dylan": (200, 185, 170),  # Soluk kahve
-        "Survivor": (190, 190, 190),  # Gri
+        "Billy":    (210, 180, 140),
+        "Vietnam":  (160, 175, 155),
+        "Dylan":    (200, 185, 160),
+        "Survivor": (185, 185, 195),
     }
 
     bg_color = themes["Billy"]
@@ -24,8 +42,7 @@ def create_poem_card(door_title: str, poem_lines: list) -> Image.Image:
     img = Image.new("RGB", (width, height), bg_color)
     draw = ImageDraw.Draw(img)
 
-    # Parşömen dokusu - rastgele lekeler
-    import random
+    # Parchment texture
     for _ in range(2000):
         x = random.randint(0, width)
         y = random.randint(0, height)
@@ -33,38 +50,41 @@ def create_poem_card(door_title: str, poem_lines: list) -> Image.Image:
         dark = tuple(max(0, c - r) for c in bg_color)
         draw.point((x, y), fill=dark)
 
-    # Kenar çerçevesi
+    # Border frames
     for i in range(3):
         draw.rectangle(
             [20 + i * 4, 20 + i * 4, width - 20 - i * 4, height - 20 - i * 4],
             outline=(101, 67, 33),
-            width=1
+            width=1,
         )
 
-    # Üst süsleme çizgisi
+    # Decorative lines
     draw.line([(60, 80), (width - 60, 80)], fill=(101, 67, 33), width=2)
     draw.line([(60, 85), (width - 60, 85)], fill=(101, 67, 33), width=1)
-
-    # Alt süsleme çizgisi
     draw.line([(60, height - 80), (width - 60, height - 80)], fill=(101, 67, 33), width=1)
     draw.line([(60, height - 85), (width - 60, height - 85)], fill=(101, 67, 33), width=2)
 
-    # Başlık
-    draw.text((width // 2, 50), door_title, fill=(60, 30, 10), anchor="mm")
+    font_title = _load_font(32)
+    font_poem  = _load_font(22)
+    font_footer = _load_font(18)
 
-    # Şiir satırları
-    y_start = 140
-    line_height = 60
+    # Title
+    draw.text((width // 2, 50), door_title,
+              fill=(60, 30, 10), anchor="mm", font=font_title)
+
+    # Poem lines
+    y_start = 150
+    line_height = 55
     for line in poem_lines:
-        draw.text((width // 2, y_start), line, fill=(40, 20, 5), anchor="mm")
+        draw.text((width // 2, y_start), line,
+                  fill=(40, 20, 5), anchor="mm", font=font_poem)
         y_start += line_height
 
-    # Alt bilgi
-    draw.text((width // 2, height - 50), "— 1973 —", fill=(101, 67, 33), anchor="mm")
+    # Footer
+    draw.text((width // 2, height - 50), "— 1973 —",
+              fill=(101, 67, 33), anchor="mm", font=font_footer)
 
-    # Hafif blur - eski kağıt hissi
     img = img.filter(ImageFilter.GaussianBlur(radius=0.3))
-
     return img
 
 
@@ -75,8 +95,8 @@ if __name__ == "__main__":
             "The dust is kickin' up behind,",
             "Leavin' shadows where I been.",
             "Nowhere to run, nowhere to hide,",
-            "Just the wind and a brand new sin."
-        ]
+            "Just the wind and a brand new sin.",
+        ],
     )
     img.save("test_card.png")
     print("test_card.png kaydedildi!")

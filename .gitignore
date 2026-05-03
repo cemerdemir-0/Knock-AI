@@ -25,3 +25,8 @@ Thumbs.db
 
 # HuggingFace cache
 *.cache
+# ChromaDB (generated, do not commit)
+chroma_db/
+
+# Test wav outputs
+test_*.wav
