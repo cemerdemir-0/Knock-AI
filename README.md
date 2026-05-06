@@ -85,7 +85,7 @@ knock/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/cemerdemir-0/knock.git
+git clone https://github.com/cemerdemir-0/Knock-AI.git
 cd knock
 ```
 
